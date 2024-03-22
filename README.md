@@ -5,7 +5,7 @@
 
 Terceira Avaliação da disciplina de Máquinas Térmicas do curso de Engenharia de Energias Renováveis da Universidade Federal da Paraíba (UFPB).
 
-## Informações Extras 🚀
+## Informações Extras 
 
 Apresentar as curvas características (a) Diagrama Pressão x Volume (P.v); (b) Curva de Torque, 
 Potência e Consumo Específico, de um motor Diesel V12 de 24,2 L, com diâmetro do pistão de 128 
