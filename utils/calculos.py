@@ -57,19 +57,66 @@ def main():
     # Número de cilindros
     n_cilindros = 12  
     
-    # Valores de velocidade angular (RPM)
+    # Valores de velocidade angular (RPM) para o gráfico
     omega_values = np.linspace(1000, 6000, 100)
 
-    diametros_pistao = [150 / 1000, 170 / 1000]  # Convertendo para metros
+    # Diâmetro do pistão em metros
+    diametro_pistao_128 = 128 / 1000  # Convertendo para metros
     
+    # Calculando as curvas para o diâmetro do pistão de 128 mm
+    torque_values_128 = calcular_torque(omega_values, n_cilindros, diametro_pistao_128, V_cilindro, taxa_compressao, R, gamma, P_atm, T_amb)
+    potencia_values_128 = calcular_potencia(torque_values_128, omega_values)
+    consumo_especifico_values_128 = calcular_consumo_especifico(torque_values_128, omega_values, n_cilindros, V_cilindro, taxa_compressao, R, gamma, P_atm, T_amb)
+    figuras_128 = plotar_graficos(omega_values, torque_values_128, potencia_values_128, consumo_especifico_values_128, diametro_pistao_128)
+
+    # Apresentando os gráficos para o diâmetro do pistão de 128 mm no Streamlit
+    st.plotly_chart(figuras_128[0], use_container_width=True)
+    st.plotly_chart(figuras_128[1], use_container_width=True)
+    st.plotly_chart(figuras_128[2], use_container_width=True)
     
-    for diametro_pistao in diametros_pistao:
-        torque_values = calcular_torque(omega_values, n_cilindros, diametro_pistao, V_cilindro, taxa_compressao, R, gamma, P_atm, T_amb)
-        potencia_values = calcular_potencia(torque_values, omega_values)
-        consumo_especifico_values = calcular_consumo_especifico(torque_values, omega_values, n_cilindros, V_cilindro, taxa_compressao, R, gamma, P_atm, T_amb)
-        figuras = plotar_graficos(omega_values, torque_values, potencia_values, consumo_especifico_values, diametro_pistao)
+    # Lista de diâmetros de pistão em metros
+    diametros_pistao = [150, 170]
+    # Gerando amostras para o pistão no intervalo de 150 a 170 mm
+    amostras_diametro_pistao = np.linspace(diametros_pistao[0], diametros_pistao[1], int(((diametros_pistao[1] - diametros_pistao[0]) / 2) + 1))
+    # Convertendo os valores das amostras em metros
+    amostras_diametro_pistao_m = amostras_diametro_pistao / 1000
+    # Rotação fixa
+    omega_value2 = 3000
+    # Listas para armazenar os valores de torque, potência e consumo específico
+    torque_values = []
+    powers_values = []
+    ces_values = []
+
+    # Cálculo dos valores de torque, potência e consumo específico para cada diâmetro de pistão
+    for diametro_pistao in amostras_diametro_pistao_m:
+        V_comb = V_cilindro / (taxa_compressao - 1)
+        m_ar = (P_atm * V_comb) / (R * T_amb)
         
-        # Apresentando os gráficos no Streamlit
-        st.plotly_chart(figuras[0], use_container_width=True)
-        st.plotly_chart(figuras[1], use_container_width=True)
-        st.plotly_chart(figuras[2], use_container_width=True)
+        torque = m_ar * (gamma * R * T_amb) * (1 - (1 / (omega_value2 * n_cilindros * V_comb))) * ((diametro_pistao) / 2)**2 * np.pi
+        torque_values.append(torque)
+
+        power = (torque * omega_value2 * 2 * np.pi / 60) / 1000
+        powers_values.append(power)
+
+        ces = (m_ar * gamma * R * T_amb) / (power + 1e-10)
+        ces_values.append(ces)
+
+    # Plotando as figuras
+    fig_torque = go.Figure()
+    fig_torque.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=torque_values, mode='lines', name='Torque'))
+    fig_torque.update_layout(title='Curva de Torque', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Torque (N.m)', height=400)
+
+    fig_potencia = go.Figure()
+    fig_potencia.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=powers_values, mode='lines', name='Potência'))
+    fig_potencia.update_layout(title='Curva de Potência', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Potência (kW)', height=400)
+
+    fig_consumo = go.Figure()
+    fig_consumo.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=ces_values, mode='lines', name='Consumo Específico'))
+    fig_consumo.update_layout(title='Curva de Consumo Específico', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Consumo Específico (kg/W.s)', height=400)
+
+    # Apresentando os gráficos no Streamlit
+    st.plotly_chart(fig_torque, use_container_width=True)
+    st.plotly_chart(fig_potencia, use_container_width=True)
+    st.plotly_chart(fig_consumo, use_container_width=True)
+
+
