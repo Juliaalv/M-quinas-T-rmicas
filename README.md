@@ -19,3 +19,9 @@ mm e 170 mm.
 * [Plotly](https://plotly.com/python/) - Visualização de dados
 * [Cantera](https://cantera.org/dev/examples/python/reactors/ic_engine.html) - Diagrama P-V
 * [Streamlit](https://streamlit.io/) - Visualização de dados
+
+## ✒️ Autores
+
+Júlia Alves Santos 
+Dara
+José Vinicios 
