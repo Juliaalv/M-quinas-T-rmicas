@@ -1,3 +1,5 @@
+
+#Bibliotecas Necessárias
 import numpy as np
 import streamlit as st
 import plotly.graph_objects as go
@@ -42,20 +44,14 @@ def plotar_graficos(omega_values, torque_values, potencia_values, consumo_especi
 # Função base
 def main():
     
-    # Volume do cilindro em litros
-    V_cilindro = 24.2  
-    # Taxa de compressão
-    taxa_compressao = 14 
-    # Constante específica dos gases em J/(kg·K)
-    R = 287 
-    # Razão de calor específico para ar
-    gamma = 1.4  
-    # Razão de calor específico para ar
-    P_atm = 1.01325 * 10**5  
-    # Razão de calor específico para ar
-    T_amb = 25 + 273.15  
-    # Número de cilindros
-    n_cilindros = 12  
+    
+    V_cilindro = 24.2           # Volume do cilindro em litros
+    taxa_compressao = 14        # Taxa de compressão
+    R = 287                     # Constante específica dos gases em J/(kg·K)
+    gamma = 1.4                 # Razão de calor específico para ar
+    P_atm = 1.01325 * 10**5     # Razão de calor específico para ar
+    T_amb = 25 + 273.15         # Razão de calor específico para ar
+    n_cilindros = 12            # Número de cilindros
     
     # Valores de velocidade angular (RPM) para o gráfico
     omega_values = np.linspace(1000, 6000, 100)

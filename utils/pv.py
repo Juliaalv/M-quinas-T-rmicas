@@ -1,3 +1,5 @@
+
+#Bibliotecas Necessárias
 import numpy as np
 import cantera as ct
 import plotly.graph_objects as go
@@ -5,180 +7,165 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 def pv():
-    # reaction mechanism, kinetics type and compositions
-    reaction_mechanism = 'nDodecane_Reitz.yaml'
-    phase_name = 'nDodecane_IG'
-    comp_air = 'o2:1, n2:3.76'
-    comp_fuel = 'c12h26:1'
 
-    f = 3000. / 60.  # engine speed [1/s] (3000 rpm)
-    V_H = .5e-3  # displaced volume [m**3]
-    epsilon = 14.  # compression ratio [-]
-    d_piston = 128 / 1000  # piston diameter [m]
+    '''Essa função configura e executa uma simulação de um motor a combustão interna e 
+    plota um diagrama P-V usando a biblioteca Plotly.'''
 
-    # turbocharger temperature, pressure, and composition
-    T_inlet = 300.  # K
-    p_inlet = 1.3e5  # Pa
-    comp_inlet = comp_air
+    # Mecanismo de reação, tipo de cinética e composições
+    mecanismo_reacao = 'nDodecane_Reitz.yaml'
+    nome_fase = 'nDodecane_IG'
+    comp_ar = 'o2:1, n2:3.76'
+    comp_combustivel = 'c12h26:1'
 
-    # outlet pressure
-    p_outlet = 1.2e5  # Pa
+    f = 3000. / 60.         # velocidade do motor [1/s] (3000 rpm)
+    V_H = .5e-3             # volume deslocado [m**3]
+    epsilon = 14.           # razão de compressão [-]
+    d_pistao = 128 / 1000   # diâmetro do pistão [m]
 
-    # fuel properties (gaseous!)
-    T_injector = 300.  # K
-    p_injector = 1600e5  # Pa
-    comp_injector = comp_fuel
+    # Temperatura, pressão e composição do turbocompressor
+    T_entrada = 300.        # K
+    p_entrada = 1.3e5       # Pa
+    comp_entrada = comp_ar
 
-    # ambient properties
-    T_ambient = 300.  # K
-    p_ambient = 1e5  # Pa
-    comp_ambient = comp_air
+    # Pressão de saída
+    p_saida = 1.2e5         # Pa
 
-    # Inlet valve friction coefficient, open and close timings
-    inlet_valve_coeff = 1.e-6
-    inlet_open = -18. / 180. * np.pi
-    inlet_close = 198. / 180. * np.pi
+    # Propriedades do combustível 
+    T_injetor = 300.        # K
+    p_injetor = 1600e5      # Pa
+    comp_injetor = comp_combustivel
 
-    # Outlet valve friction coefficient, open and close timings
-    outlet_valve_coeff = 1.e-6
-    outlet_open = 522. / 180 * np.pi
-    outlet_close = 18. / 180. * np.pi
+    # Propriedades do ambiente
+    T_ambiente = 300.       # K
+    p_ambiente = 1e5        # Pa
+    comp_ambiente = comp_ar
 
-    # Fuel mass, injector open and close timings
-    injector_open = 350. / 180. * np.pi
-    injector_close = 365. / 180. * np.pi
-    injector_mass = 3.2e-5  # kg
+    # Coeficiente de atrito da válvula de entrada, tempos de abertura e fechamento
+    coef_atrito_entrada = 1.e-6
+    abertura_entrada = -18. / 180. * np.pi
+    fechamento_entrada = 198. / 180. * np.pi
 
-    # Simulation time and parameters
-    sim_n_revolutions = 8
+    # Coeficiente de atrito da válvula de saída, tempos de abertura e fechamento
+    coef_atrito_saida = 1.e-6
+    abertura_saida = 522. / 180 * np.pi
+    fechamento_saida = 18. / 180. * np.pi
+
+    # Massa do combustível, tempos de abertura e fechamento do injetor
+    abertura_injetor = 350. / 180. * np.pi
+    fechamento_injetor = 365. / 180. * np.pi
+    massa_injetor = 3.2e-5  # kg
+
+    # Tempo e parâmetros de simulação
+    sim_n_revolucoes = 8
     delta_T_max = 20.
     rtol = 1.e-12
     atol = 1.e-16
 
-    #####################################################################
-    # Set up IC engine Parameters and Functions
-    #####################################################################
+    
+    #### Definir Parâmetros e Funções do Motor de Combustão Interna ####
+   
 
     V_oT = V_H / (epsilon - 1.)
-    A_piston = .25 * np.pi * d_piston ** 2
-    stroke = V_H / A_piston
+    A_pistao = .25 * np.pi * d_pistao ** 2
+    curso = V_H / A_pistao
 
-
-    def crank_angle(t):
-        """Convert time to crank angle"""
+    def angulo_virabrequim(t):
+        """Converte tempo para ângulo de virabrequim"""
         return np.remainder(2 * np.pi * f * t, 4 * np.pi)
 
+    def velocidade_pistao(t):
+        """Velocidade aproximada do pistão com perfil de velocidade senoidal"""
+        return - curso / 2 * 2 * np.pi * f * np.sin(angulo_virabrequim(t))
 
-    def piston_speed(t):
-        """Approximate piston speed with sinusoidal velocity profile"""
-        return - stroke / 2 * 2 * np.pi * f * np.sin(crank_angle(t))
 
 
-    #####################################################################
-    # Set up Reactor Network
-    #####################################################################
+    #### Configurar Rede de Reatores ####
 
-    # load reaction mechanism
-    gas = ct.Solution(reaction_mechanism, phase_name)
+    # carregar mecanismo de reação
+    gas = ct.Solution(mecanismo_reacao, nome_fase)
 
-    # define initial state and set up reactor
-    gas.TPX = T_inlet, p_inlet, comp_inlet
-    cyl = ct.IdealGasReactor(gas)
-    cyl.volume = V_oT
+    # definir estado inicial e configurar reator
+    gas.TPX = T_entrada, p_entrada, comp_entrada
+    cilindro = ct.IdealGasReactor(gas)
+    cilindro.volume = V_oT
 
-    # define inlet state
-    gas.TPX = T_inlet, p_inlet, comp_inlet
-    # Note: The previous line is technically not needed as the state of the gas object is
-    # already set correctly; change if inlet state is different from the reactor state.
-    inlet = ct.Reservoir(gas)
+    # definir estado de entrada
+    entrada = ct.Reservoir(gas)
 
-    # inlet valve
-    inlet_valve = ct.Valve(inlet, cyl)
-    inlet_delta = np.mod(inlet_close - inlet_open, 4 * np.pi)
-    inlet_valve.valve_coeff = inlet_valve_coeff
-    inlet_valve.time_function = (
-        lambda t: np.mod(crank_angle(t) - inlet_open, 4 * np.pi) < inlet_delta)
+    # válvula de entrada
+    valvula_entrada = ct.Valve(entrada, cilindro)
+    delta_entrada = np.mod(fechamento_entrada - abertura_entrada, 4 * np.pi)
+    valvula_entrada.valve_coeff = coef_atrito_entrada
+    valvula_entrada.time_function = (lambda t: np.mod(angulo_virabrequim(t) - abertura_entrada, 4 * np.pi) < delta_entrada)
 
-    # define injector state (gaseous!)
-    gas.TPX = T_injector, p_injector, comp_injector
-    injector = ct.Reservoir(gas)
+    # definir estado do injetor 
+    gas.TPX = T_injetor, p_injetor, comp_injetor
+    injetor = ct.Reservoir(gas)
 
-    # injector is modeled as a mass flow controller
-    injector_mfc = ct.MassFlowController(injector, cyl)
-    injector_delta = np.mod(injector_close - injector_open, 4 * np.pi)
-    injector_t_open = (injector_close - injector_open) / 2. / np.pi / f
-    injector_mfc.mass_flow_coeff = injector_mass / injector_t_open
-    injector_mfc.time_function = (
-        lambda t: np.mod(crank_angle(t) - injector_open, 4 * np.pi) < injector_delta)
+    # injetor é modelado como um controlador de vazão mássica
+    controlador_vazao_injetor = ct.MassFlowController(injetor, cilindro)
+    delta_injetor = np.mod(fechamento_injetor - abertura_injetor, 4 * np.pi)
+    tempo_abertura_injetor = (fechamento_injetor - abertura_injetor) / 2. / np.pi / f
+    controlador_vazao_injetor.mass_flow_coeff = massa_injetor / tempo_abertura_injetor
+    controlador_vazao_injetor.time_function = (lambda t: np.mod(angulo_virabrequim(t) - abertura_injetor, 4 * np.pi) < delta_injetor)
 
-    # define outlet pressure (temperature and composition don't matter)
-    gas.TPX = T_ambient, p_outlet, comp_ambient
-    outlet = ct.Reservoir(gas)
+    # definir pressão de saída 
+    gas.TPX = T_ambiente, p_saida, comp_ambiente
+    saida = ct.Reservoir(gas)
 
-    # outlet valve
-    outlet_valve = ct.Valve(cyl, outlet)
-    outlet_delta = np.mod(outlet_close - outlet_open, 4 * np.pi)
-    outlet_valve.valve_coeff = outlet_valve_coeff
-    outlet_valve.time_function = (
-        lambda t: np.mod(crank_angle(t) - outlet_open, 4 * np.pi) < outlet_delta)
+    # válvula de saída
+    valvula_saida = ct.Valve(cilindro, saida)
+    delta_saida = np.mod(fechamento_saida - abertura_saida, 4 * np.pi)
+    valvula_saida.valve_coeff = coef_atrito_saida
+    valvula_saida.time_function = (lambda t: np.mod(angulo_virabrequim(t) - abertura_saida, 4 * np.pi) < delta_saida)
 
-    # define ambient pressure (temperature and composition don't matter)
-    gas.TPX = T_ambient, p_ambient, comp_ambient
-    ambient_air = ct.Reservoir(gas)
+    # definir pressão ambiente 
+    gas.TPX = T_ambiente, p_ambiente, comp_ambiente
+    ar_ambiente = ct.Reservoir(gas)
 
-    # piston is modeled as a moving wall
-    piston = ct.Wall(ambient_air, cyl)
-    piston.area = A_piston
-    piston.velocity = piston_speed
+    # pistão é modelado como uma parede móvel
+    pistao = ct.Wall(ar_ambiente, cilindro)
+    pistao.area = A_pistao
+    pistao.velocity = velocidade_pistao
 
-    # create a reactor network containing the cylinder and limit advance step
-    sim = ct.ReactorNet([cyl])
+    # criar uma rede de reatores contendo o cilindro e limitar o passo de avanço
+    sim = ct.ReactorNet([cilindro])
     sim.rtol, sim.atol = rtol, atol
-    cyl.set_advance_limit('temperature', delta_T_max)
+    cilindro.set_advance_limit('temperature', delta_T_max)
 
-    #####################################################################
-    # Run Simulation
-    #####################################################################
+    
+    #### Executar Simulação do PV ####
 
-    # set up output data arrays
-    states = ct.SolutionArray(
-        cyl.thermo,
-        extra=('t', 'ca', 'V', 'm', 'mdot_in', 'mdot_out', 'dWv_dt'),
-    )
+    # configurar arrays de dados de saída
+    estados = ct.SolutionArray(cilindro.thermo, extra=('t', 'ca', 'V', 'm', 'mdot_in', 'mdot_out', 'dWv_dt'))
 
-    # simulate with a maximum resolution of 1 deg crank angle
+    # simular com uma resolução máxima de 1 grau de ângulo de virabrequim
     dt = 1. / (360 * f)
-    t_stop = sim_n_revolutions / f
+    t_stop = sim_n_revolucoes / f
     while sim.time < t_stop:
 
-        # perform time integration
+        # realizar integração temporal
         sim.advance(sim.time + dt)
 
-        # calculate results to be stored
-        dWv_dt = - (cyl.thermo.P - ambient_air.thermo.P) * A_piston * \
-            piston_speed(sim.time)
+        # calcular resultados a serem armazenados
+        dWv_dt = - (cilindro.thermo.P - ar_ambiente.thermo.P) * A_pistao * \
+            velocidade_pistao(sim.time)
 
-        # append output data
-        states.append(cyl.thermo.state,
-                    t=sim.time, ca=crank_angle(sim.time),
-                    V=cyl.volume, m=cyl.mass,
-                    mdot_in=inlet_valve.mass_flow_rate,
-                    mdot_out=outlet_valve.mass_flow_rate,
+        # anexar dados de saída
+        estados.append(cilindro.thermo.state,
+                    t=sim.time, ca=angulo_virabrequim(sim.time),
+                    V=cilindro.volume, m=cilindro.mass,
+                    mdot_in=valvula_entrada.mass_flow_rate,
+                    mdot_out=valvula_saida.mass_flow_rate,
                     dWv_dt=dWv_dt)
 
 
-    #######################################################################
-    # Plot Results in matplotlib
-    #######################################################################
-
-    def ca_ticks(t):
-        """Helper function converts time to rounded crank angle."""
-        return np.round(crank_angle(t) * 180 / np.pi, decimals=1)
-
-
-    t = states.t
-    volume_litros = states.V * 1000  # Convertendo para litros
-    pressao_bar = states.P / 1e5  # Convertendo para bar
+   
+    #### Resultados ####
+    
+    t = estados.t
+    volume_litros = estados.V * 1000    # Convertendo para litros
+    pressao_bar = estados.P / 1e5       # Convertendo para bar
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=volume_litros[t > 0.04], y=pressao_bar[t > 0.04], mode='lines'))

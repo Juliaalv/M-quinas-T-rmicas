@@ -1,7 +1,6 @@
-import streamlit as st
-import plotly.graph_objects as go
-import numpy as np
 
+#Bibliotecas Necessárias
+import streamlit as st
 import sys
 sys.path.append('utils')  
 
