@@ -12,9 +12,18 @@ def pv():
     plota um diagrama P-V usando a biblioteca Plotly.'''
 
     # Mecanismo de reação, tipo de cinética e composições
+
+    mol_c12h26 = 1
+    mol_O2_needed = 18.5* mol_c12h26
+
+    # Composição correta do ar considerando o excesso de ar
+    excesso_ar = 0.5  # 50% de excesso de ar
+    mol_O2_ar = mol_O2_needed * (1 + excesso_ar)
+    mol_N2_ar = 3.76 * mol_O2_needed
+    comp_ar = f'O2:{mol_O2_ar}, N2:{mol_N2_ar}'
     mecanismo_reacao = 'nDodecane_Reitz.yaml'
     nome_fase = 'nDodecane_IG'
-    comp_ar = 'o2:1, n2:3.76'
+    #comp_ar = 'o2:1, n2:3.76'
     comp_combustivel = 'c12h26:1'
 
     f = 3000. / 60.         # velocidade do motor [1/s] (3000 rpm)
