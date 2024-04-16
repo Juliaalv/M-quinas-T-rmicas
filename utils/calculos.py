@@ -12,6 +12,7 @@ def calcular_torque(omega_values, n_cil, diametro_pistao, V_cilindro, taxa_compr
     torque_values = m_ar * (gamma * R * T_amb) * (1 - (1 / (omega_values * n_cil * V_comb))) * (diametro_pistao / 2)**2 * np.pi
     return torque_values
 
+# Função para calcular potência
 def calcular_potencia(torque_values, omega_values):
     return (torque_values * omega_values * 2 * np.pi / 60) / 1000
 
@@ -22,7 +23,7 @@ def calcular_consumo_especifico(torque_values, omega_values, n_cil, V_cilindro, 
     return (m_ar * gamma * R * T_amb) / (calcular_potencia(torque_values, omega_values) + 1e-10)
 
 
-# Função para gerar os gráficos
+# Função para gerar os gráficos separados
 def plotar_graficos(omega_values, torque_values, potencia_values, consumo_especifico_values, diametro_pistao):
     fig_torque = go.Figure()
     fig_torque.add_trace(go.Scatter(x=omega_values, y=torque_values, mode='lines', name='Torque'))
@@ -41,8 +42,9 @@ def plotar_graficos(omega_values, torque_values, potencia_values, consumo_especi
     
     return fig_torque, fig_potencia, fig_consumo
 
+# Função para gerar o gráfico com 3 eixos 
 def grafico_3eixos(omega_values, torque_values, potencia_values, consumo_especifico_values, diametro_pistao):
-    # Criando a figura
+    
     fig = go.Figure()
 
     # Adicionando as curvas de torque e potência
@@ -63,14 +65,14 @@ def grafico_3eixos(omega_values, torque_values, potencia_values, consumo_especif
     # Configurando o eixo x
     fig.update_layout(xaxis=dict(title='RPM'))
     
-    # Configurando layout geral
     fig.update_layout(title=f'Desempenho do Motor (Diâmetro do Pistão: {diametro_pistao * 1000} mm)',
                       height=600, width=1000, legend=dict(x=1.1, y=1.0))
     
     return fig    
 
+# Função para gerar o gráfico com 3 eixos para variação de diâmetro
 def graf_3eixos_150a170(omega_values, torque_values, potencia_values, consumo_especifico_values):
-    # Criando a figura
+    
     fig = go.Figure()
 
     # Adicionando as curvas de torque e potência
@@ -90,17 +92,16 @@ def graf_3eixos_150a170(omega_values, torque_values, potencia_values, consumo_es
     
     # Configurando o eixo x
     fig.update_layout(xaxis=dict(title='Diâmetro do Pistão (mm)'))
-    
-    # Configurando layout geral
     fig.update_layout(title=f'Desempenho do Motor (150 a 170 mm)',
                       height=600, width=1000, legend=dict(x=1.1, y=1.0))
     
     return fig
+
 # Função base
 def main():
     
     
-    V_cilindro = 24.2/1000      # Volume do cilindro 
+    V_cilindro = 24.2/1000      # cilindrada
     taxa_compressao = 14        # Taxa de compressão
     R = 287                     # Constante específica dos gases em J/(kg·K)
     gamma = 1.4                 # Razão de calor específico para ar
@@ -120,6 +121,7 @@ def main():
     consumo_especifico_values_128 = calcular_consumo_especifico(torque_values_128, omega_values, n_cilindros, V_cilindro, taxa_compressao, R, gamma, P_atm, T_amb)
     figuras_128 = plotar_graficos(omega_values, torque_values_128, potencia_values_128, consumo_especifico_values_128, diametro_pistao_128)
     figura_128_3eixos = grafico_3eixos(omega_values, torque_values_128, potencia_values_128, consumo_especifico_values_128, diametro_pistao_128)
+    
     # Apresentando os gráficos para o diâmetro do pistão de 128 mm no Streamlit
     st.plotly_chart(figura_128_3eixos, use_container_width=True)
     st.plotly_chart(figuras_128[0], use_container_width=True)
@@ -128,12 +130,16 @@ def main():
     
     # Lista de diâmetros de pistão em metros
     diametros_pistao = [150, 170,2]
+
     # Gerando amostras para o pistão no intervalo de 150 a 170 mm
     amostras_diametro_pistao = np.linspace(diametros_pistao[0], diametros_pistao[1], int(((diametros_pistao[1] - diametros_pistao[0]) / 2) + 1))
+    
     # Convertendo os valores das amostras em metros
     amostras_diametro_pistao_m = amostras_diametro_pistao / 1000
+    
     # Rotação fixa
     omega_value2 = 3000
+    
     # Listas para armazenar os valores de torque, potência e consumo específico
     torque_values = []
     powers_values = []

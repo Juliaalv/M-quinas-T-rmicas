@@ -22,6 +22,4 @@ mm e 170 mm.
 
 ## ✒️ Autores
 
-Júlia Alves Santos 
-Dara
-José Vinicios 
+DARA, JOSÉ VINICIUS e JULIA ALVES.

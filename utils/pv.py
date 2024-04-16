@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import streamlit as st
 
+#Função para gerar o diagrama P-v
 def pv():
 
     '''Essa função configura e executa uma simulação de um motor a combustão interna e 
@@ -23,7 +24,6 @@ def pv():
     comp_ar = f'O2:{mol_O2_ar}, N2:{mol_N2_ar}'
     mecanismo_reacao = 'nDodecane_Reitz.yaml'
     nome_fase = 'nDodecane_IG'
-    #comp_ar = 'o2:1, n2:3.76'
     comp_combustivel = 'c12h26:1'
 
     f = 3000. / 60.         # velocidade do motor [1/s] (3000 rpm)
@@ -73,7 +73,6 @@ def pv():
     
     #### Definir Parâmetros e Funções do Motor de Combustão Interna ####
    
-
     V_oT = V_H / (epsilon - 1.)
     A_pistao = .25 * np.pi * d_pistao ** 2
     curso = V_H / A_pistao
