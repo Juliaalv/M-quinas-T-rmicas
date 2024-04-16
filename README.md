@@ -15,7 +15,7 @@ mm e 170 mm.
 
 ### 🛠️ Construído com
 
-* [Pandas](https://pandas.pydata.org/docs/) - Análise de dados
+* [Numpy](https://numpy.org/doc/stable/) - Análise de dados
 * [Plotly](https://plotly.com/python/) - Visualização de dados
 * [Cantera](https://cantera.org/dev/examples/python/reactors/ic_engine.html) - Diagrama P-V
 * [Streamlit](https://streamlit.io/) - Visualização de dados

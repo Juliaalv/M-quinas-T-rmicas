@@ -85,8 +85,6 @@ def pv():
         """Velocidade aproximada do pistão com perfil de velocidade senoidal"""
         return - curso / 2 * 2 * np.pi * f * np.sin(angulo_virabrequim(t))
 
-
-
     #### Configurar Rede de Reatores ####
 
     # carregar mecanismo de reação
