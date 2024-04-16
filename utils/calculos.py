@@ -165,15 +165,15 @@ def main():
     fig_3var = graf_3eixos_150a170(amostras_diametro_pistao_m * 1000, torque_values, powers_values,ces_values)
     fig_torque = go.Figure()
     fig_torque.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=torque_values, mode='lines', name='Torque'))
-    fig_torque.update_layout(title='Curva de Torque', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Torque (N.m)', height=400)
+    fig_torque.update_layout(title='Análise do Torque para o Diâmetro do Pistão de 150 a 170mm', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Torque (N.m)', height=400)
 
     fig_potencia = go.Figure()
     fig_potencia.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=powers_values, mode='lines', name='Potência'))
-    fig_potencia.update_layout(title='Curva de Potência', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Potência (kW)', height=400)
+    fig_potencia.update_layout(title='Análise da Potência para o Diâmetro do Pistão de 150 a 170mm', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Potência (kW)', height=400)
 
     fig_consumo = go.Figure()
     fig_consumo.add_trace(go.Scatter(x=amostras_diametro_pistao_m * 1000, y=ces_values, mode='lines', name='Consumo Específico'))
-    fig_consumo.update_layout(title='Curva de Consumo Específico', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Consumo Específico (kg/W.s)', height=400)
+    fig_consumo.update_layout(title='Análise do Concumo Específico para o Diâmetro do Pistão de 150 a 170mm', xaxis_title='Diâmetro do Pistão (mm)', yaxis_title='Consumo Específico (kg/W.s)', height=400)
 
     # Apresentando os gráficos no Streamlit
     st.plotly_chart(fig_3var, use_container_width=True)
